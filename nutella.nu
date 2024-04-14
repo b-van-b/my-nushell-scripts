@@ -1,11 +1,15 @@
-export def main [] nothing -> nothing {
+# use nutella.nu
 
+export def main [] {
+    help nutella
 }
 
+# Returns the list of packages installed with Chocolatey as a table.
 export def list [] nothing -> table {
     choco list | split row "\r\n" | range 1..-2 | split column ' ' | rename package version
 }
 
+# Gets a list of outdated Chocolatey packages and lets the user select which ones to update.
 export def outdated [] {
     print 'Getting list of outdated packages...'
     let package_list: table = (
