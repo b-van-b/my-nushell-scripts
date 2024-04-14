@@ -4,6 +4,11 @@ export def main [] {
     help nutella
 }
 
+# return true if this is an admin session or if gsudo is installed
+def can-admin [] nothing -> bool {
+    (which gsudo | is-not-empty) or ((do {net session} | complete | get exit_code) == 0)
+}
+
 # Returns the list of packages installed with Chocolatey as a table.
 export def list [] nothing -> table {
     choco list | split row "\r\n" | range 1..-2 | split column ' ' | rename package version
@@ -11,6 +16,13 @@ export def list [] nothing -> table {
 
 # Gets a list of outdated Chocolatey packages and lets the user select which ones to update.
 export def outdated [] {
+    # check for admin privileges
+    if not (can-admin) {
+        error make {
+            msg: 'This action requires admin privileges.'
+            help: 'Please run as admin or install gsudo (https://gerardog.github.io/gsudo/).'
+        }
+    }
     print 'Getting list of outdated packages...'
     let package_list: table = (
         choco outdated | 
