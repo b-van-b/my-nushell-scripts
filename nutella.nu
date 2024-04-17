@@ -32,7 +32,8 @@ export def outdated [] {
         split column '|' | 
         rename package current available pinned
     )
-    if ($package_list | is-empty) {
+    # stop if no outdated packages found
+    if ($package_list | is-empty) or ('Chocolatey has determined 0 package(s) are outdated. ' in $package_list.package) {
         print 'No outdated packages found!'
         return
     }
