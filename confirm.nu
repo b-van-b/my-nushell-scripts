@@ -7,6 +7,7 @@ export def confirm [
     prompt: string = '' # A prompt to display to the user
     --default(-d):string # A default response returned by the 'enter' key; one of [y n], case-insensitive
     ]: nothing -> bool {
+
     mut settings: record<keys: list<string>, default: bool, choice: string> = {
         keys: [y n]
         default: false
@@ -32,15 +33,12 @@ export def confirm [
             }
         }
     }
-    mut keydown: string = ''
 
     print --no-newline $'($prompt) ($settings.choice) '
 
-    loop {
+    mut keydown: string = ''
+    while $keydown not-in $settings.keys {
         $keydown = (input listen --types [key] | get code | str downcase)
-        if $keydown in $settings.keys {
-            break
-        }
     }
 
     let result: bool = (match $keydown {
