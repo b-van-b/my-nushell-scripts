@@ -4,9 +4,18 @@ export def main [] {
     help nutella
 }
 
-# return true if this is an admin session or if gsudo is installed
-def can-admin [] nothing -> bool {
-    (which gsudo | is-not-empty) or ((do {net session} | complete | get exit_code) == 0)
+# determine if this is an admin session or if gsudo is installed
+# ADMIN = this is an admin session
+# GSUDO = can get admin with gsudo
+# NONE = unable to get admin
+def get-admin [] nothing -> string {
+    if ((do {net session} | complete | get exit_code) == 0) {
+        'ADMIN'
+    } else if (which gsudo | is-not-empty) {
+        'GSUDO'
+    } else {
+        'NONE'
+    }
 }
 
 # Returns the list of packages installed with Chocolatey as a table.
@@ -17,7 +26,8 @@ export def list [] nothing -> table {
 # Gets a list of outdated Chocolatey packages and lets the user select which ones to update.
 export def outdated [] {
     # check for admin privileges
-    if not (can-admin) {
+    let admin: string = (get-admin)
+    if admin == 'NONE' {
         error make {
             msg: 'This action requires admin privileges.'
             help: 'Please run as admin or install gsudo (https://gerardog.github.io/gsudo/).'
@@ -50,5 +60,11 @@ export def outdated [] {
         return
     }
     
-    gsudo choco upgrade ...$selection
+    match $admin {
+        'ADMIN' => (choco upgrade ...$selection)
+        'GSUDO' => (gsudo choco upgrade ...$selection)
+        _ => (error make {
+            msg: $'Attempted to run choco with invalid admin state: "($admin)"'
+            })
+    }
 }
