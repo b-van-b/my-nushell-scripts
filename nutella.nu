@@ -68,3 +68,39 @@ export def outdated [] {
             })
     }
 }
+
+export def uninstall [] {
+    # check for admin privileges
+    let admin: string = (get-admin)
+    if admin == 'NONE' {
+        error make {
+            msg: 'This action requires admin privileges.'
+            help: 'Please run as admin or install gsudo (https://gerardog.github.io/gsudo/).'
+        }
+    }
+
+    print 'Getting list of installed packages...'
+    
+    let package_list: table = (list)
+    print $package_list
+    let selection: list = (
+        $package_list | 
+        get package | 
+        input list -m 'Select packages to uninstall (a to select all)'
+    )
+
+    print 'Packages to be uninstalled:'
+    print ($selection | str join ', ')
+    if (input -n 1 'Proceed? (y/n) ') not-in [y Y] {
+        print 'Aborted.'
+        return
+    }
+
+    match $admin {
+        'ADMIN' => (choco uninstall ...$selection)
+        'GSUDO' => (gsudo choco uninstall ...$selection)
+        _ => (error make {
+            msg: $'Attempted to run choco with invalid admin state: "($admin)"'
+            })
+    }
+}
