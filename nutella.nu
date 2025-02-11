@@ -19,8 +19,8 @@ def get-admin []: nothing -> string {
 }
 
 # Returns the list of packages installed with Chocolatey as a table.
-    choco list | lines | range 1..-2 | split column ' ' | rename package version
 export def list []: nothing -> table {
+    choco list | lines | slice 1..-2 | split column ' ' | rename package version
 }
 
 # Gets a list of outdated Chocolatey packages and lets the user select which ones to update.
