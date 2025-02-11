@@ -8,7 +8,7 @@ export def main [] {
 # ADMIN = this is an admin session
 # GSUDO = can get admin with gsudo
 # NONE = unable to get admin
-def get-admin [] nothing -> string {
+def get-admin []: nothing -> string {
     if ((do {net session} | complete | get exit_code) == 0) {
         'ADMIN'
     } else if (which gsudo | is-not-empty) {
@@ -19,8 +19,8 @@ def get-admin [] nothing -> string {
 }
 
 # Returns the list of packages installed with Chocolatey as a table.
-export def list [] nothing -> table {
     choco list | lines | range 1..-2 | split column ' ' | rename package version
+export def list []: nothing -> table {
 }
 
 # Gets a list of outdated Chocolatey packages and lets the user select which ones to update.
